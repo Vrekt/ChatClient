@@ -5,6 +5,6 @@ package me.vrekt.chathandler.type;
  */
 public enum ChatType {
 
-    MESSAGE, LOGOUT, WHO
+    MESSAGE, LOGOUT, WHO, USERID
 
 }

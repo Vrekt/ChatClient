@@ -12,9 +12,23 @@ public class ChatMessage implements Serializable {
     private ChatType chatType;
     private String message;
 
+    private ClientInformation messageOwner;
+
+    public ChatMessage(ChatType type, String message, ClientInformation messageOwner) {
+        this.chatType = type;
+        this.message = message;
+
+        this.messageOwner = messageOwner;
+
+    }
+
     public ChatMessage(ChatType type, String message) {
         this.chatType = type;
         this.message = message;
+    }
+
+    public ChatMessage(ChatType type) {
+        this.chatType = type;
     }
 
     public ChatType getChatType() {
@@ -25,5 +39,11 @@ public class ChatMessage implements Serializable {
         return message;
     }
 
+    public ClientInformation getMessageOwner() {
+        return messageOwner;
+    }
 
+    public void setMessageOwner(ClientInformation messageOwner) {
+        this.messageOwner = messageOwner;
+    }
 }

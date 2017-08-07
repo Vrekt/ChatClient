@@ -1,6 +1,7 @@
 package me.vrekt.client;
 
 import me.vrekt.chathandler.ChatMessage;
+import me.vrekt.chathandler.ClientInformation;
 import me.vrekt.chathandler.type.ChatType;
 
 import java.io.IOException;
@@ -23,6 +24,8 @@ public class Client {
     private static int port;
 
     static boolean isConnected;
+
+    static ClientInformation myInfo;
 
     /**
      * Initialize.
@@ -59,7 +62,7 @@ public class Client {
             System.out.print("> ");
             String message = input.nextLine();
 
-            client.sendMessage(new ChatMessage(ChatType.MESSAGE, message));
+            client.sendMessage(new ChatMessage(ChatType.MESSAGE, message, myInfo));
 
         }
 
@@ -86,11 +89,18 @@ public class Client {
             serverIn = new ObjectInputStream(socket.getInputStream());
 
             isConnected = true;
-            // start the serverlistener and send our username to the server.
-            new ServerListener().start();
+            // start the serverlistener and send our username to the server and also get our ID.
             serverOut.writeObject(new ChatMessage(ChatType.MESSAGE, username));
 
-        } catch (IOException e) {
+            // attempt to get the userID.
+            ChatMessage message = (ChatMessage) serverIn.readObject();
+            if (message.getChatType() == ChatType.USERID) {
+                myInfo = new ClientInformation(username, Integer.parseInt(message.getMessage()));
+            }
+
+            new ServerListener().start();
+
+        } catch (IOException | ClassNotFoundException e) {
             return false;
         }
 
@@ -122,6 +132,7 @@ public class Client {
             serverOut.writeObject(message);
         } catch (IOException e) {
             System.out.println("Failed to send message: " + message.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -137,6 +148,11 @@ public class Client {
                 try {
                     // retrieve chatmessage and display it.
                     ChatMessage message = (ChatMessage) serverIn.readObject();
+
+                    if (message.getMessageOwner().getClientID() == myInfo.getClientID()) {
+                        continue;
+                    }
+
                     System.out.println(message.getMessage());
                 } catch (IOException | ClassNotFoundException | NullPointerException e) {
                     isConnected = false;

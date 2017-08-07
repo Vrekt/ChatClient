@@ -1,9 +1,9 @@
 package me.vrekt.server.client;
 
 import me.vrekt.chathandler.ChatMessage;
+import me.vrekt.chathandler.ClientInformation;
 import me.vrekt.chathandler.type.ChatType;
 import me.vrekt.server.Server;
-import me.vrekt.server.client.info.ClientInformation;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -49,6 +49,8 @@ public class Client extends Thread {
             // Create client output first because for some reason if the input is created first nothing works.
             clientOut = new ObjectOutputStream(socket.getOutputStream());
             clientIn = new ObjectInputStream(socket.getInputStream());
+            // send their userID.
+            clientOut.writeObject(new ChatMessage(ChatType.USERID, String.valueOf(userID)));
 
             ChatMessage clientUsername = (ChatMessage) clientIn.readObject();
             // security maybe? if somebody tries to send logout or who and not a message with their username.
@@ -86,7 +88,7 @@ public class Client extends Thread {
         // receive new messages
         try {
             clientMessage = (ChatMessage) clientIn.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException | ClassCastException e) {
             // do nothing.
         }
 
@@ -95,7 +97,13 @@ public class Client extends Thread {
         if (clientMessage != null) {
             switch (clientMessage.getChatType()) {
                 case MESSAGE:
-                    Server.broadcastMessage(clientMessage.getMessage());
+
+                    // get the username and ID.
+                    String username = clientMessage.getMessageOwner().getClientUsername();
+                    int ID = clientMessage.getMessageOwner().getClientID();
+                    Server.logInformation("[" + ID + "][" + username + "]: " + clientMessage.getMessage());
+
+                    Server.broadcastMessage("[" + username + "]: " + clientMessage.getMessage());
                     clientMessage = null;
                     break;
                 case WHO:
@@ -148,7 +156,16 @@ public class Client extends Thread {
      * @return if the client is connected or not.
      */
     public boolean isClientConnected() {
-        return clientConnected;
+        // improve later check if were actually connected.
+       return clientConnected;
     }
 
+    /**
+     * Get client information.
+     *
+     * @return client information
+     */
+    public ClientInformation getClientInfo() {
+        return clientInfo;
+    }
 }

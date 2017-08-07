@@ -29,6 +29,7 @@ public class Server extends Thread {
     public Server(int port) {
         // try to create new server socket.
         try {
+            logInformation("Creating new ServerSocket on port " + port);
             server = new ServerSocket(port);
         } catch (IOException e) {
             logCriticalMessage("Failed to start server, error with creating ServerSocket on port: " + port);
@@ -53,7 +54,7 @@ public class Server extends Thread {
      * @param message the message
      */
     public static void logInformation(String message) {
-        System.out.println("[INFO] " + message);
+        System.out.println("[INFO]" + message);
     }
 
     /**
@@ -62,7 +63,6 @@ public class Server extends Thread {
      * @param message the message
      */
     public static void broadcastMessage(String message) {
-        logInformation(message);
         connectedClients.forEach(client -> client.sendClientMessage(new ChatMessage(ChatType.MESSAGE, message)));
     }
 
@@ -72,12 +72,18 @@ public class Server extends Thread {
     private void validateClients() {
         List<Client> invalidClients = connectedClients.stream().filter(client -> !client.isClientConnected()).collect(Collectors.toList());
         invalidClients.forEach(client -> connectedClients.remove(client));
+
+        if (!invalidClients.isEmpty()) {
+            invalidClients.forEach(client -> logInformation(client.getClientInfo().getClientUsername() + " has logged out."));
+        }
+
     }
 
     /**
      * Start the server.
      */
     public void startServer() {
+        logInformation("Starting server....");
         serverRunning = true;
         this.start();
     }
@@ -106,7 +112,7 @@ public class Server extends Thread {
      * Handle all the server stuff.
      */
     public void run() {
-
+        logInformation("Server started.");
         while (serverRunning) {
             // validate clients.
             validateClients();
