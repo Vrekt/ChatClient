@@ -1,5 +1,7 @@
 package me.vrekt.server;
 
+import me.vrekt.chathandler.ChatMessage;
+import me.vrekt.chathandler.type.ChatType;
 import me.vrekt.server.client.Client;
 
 import java.io.IOException;
@@ -60,7 +62,8 @@ public class Server extends Thread {
      * @param message the message
      */
     public static void broadcastMessage(String message) {
-        connectedClients.forEach(client -> client.sendClientMessage(message));
+        logInformation(message);
+        connectedClients.forEach(client -> client.sendClientMessage(new ChatMessage(ChatType.MESSAGE, message)));
     }
 
     /**

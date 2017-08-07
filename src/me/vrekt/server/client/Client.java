@@ -96,6 +96,7 @@ public class Client extends Thread {
             switch (clientMessage.getChatType()) {
                 case MESSAGE:
                     Server.broadcastMessage(clientMessage.getMessage());
+                    clientMessage = null;
                     break;
                 case WHO:
                     //
@@ -132,7 +133,7 @@ public class Client extends Thread {
      * @param message the message
      * @return true or false depending if it failed or not.
      */
-    public boolean sendClientMessage(String message) {
+    public boolean sendClientMessage(ChatMessage message) {
         try {
             clientOut.writeObject(message);
             return true;
